@@ -10,6 +10,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 from miscc.config import cfg
 from GlobalAttention import GlobalAttentionGeneral as ATT_NET
+from GlobalAttention import GlobalAttentionGeneral1 as ATT_NET1
 from GlobalAttention import GlobalAttention_text as ATT_NET_text
 from spectral import SpectralNorm
 
@@ -467,7 +468,7 @@ class NEXT_STAGE_G(nn.Module):
 
 class NEXT_STAGE_G1(nn.Module):
     def __init__(self, ngf, nef, ncf):
-        super(NEXT_STAGE_G, self).__init__()
+        super(NEXT_STAGE_G1, self).__init__()
         self.gf_dim = ngf
         self.ef_dim = nef
         self.cf_dim = ncf
@@ -482,11 +483,11 @@ class NEXT_STAGE_G1(nn.Module):
 
     def define_module(self):
         ngf = self.gf_dim
-        self.att = ATT_NET(ngf, self.ef_dim)
+        self.att = ATT_NET1(ngf, self.ef_dim)
         self.residual = self._make_layer(ResBlock, ngf * 2)
         self.upsample = upBlock(ngf * 2, ngf)
 
-    def forward(self, h_code, c_code, word_embs, mask):
+    def forward(self, h_code, c_code, word_embs, mask, cap_lens):
         """
             h_code1(query):  batch x idf x ih x iw (queryL=ihxiw)
             word_embs(context): batch x cdf x sourceL (sourceL=seq_len)
@@ -534,7 +535,7 @@ class G_NET(nn.Module):
             self.h_net2 = NEXT_STAGE_G(ngf, nef, ncf, 64)
             self.img_net2 = GET_IMAGE_G(ngf)
         if cfg.TREE.BRANCH_NUM > 2:
-            self.h_net3 = NEXT_STAGE_G1(ngf, nef, ncf, 128)
+            self.h_net3 = NEXT_STAGE_G1(ngf, nef, ncf)
             self.img_net3 = GET_IMAGE_G(ngf)
 
     def forward(self, z_code, sent_emb, word_embs, mask, cap_lens):
