@@ -305,33 +305,15 @@ class INIT_STAGE_G(nn.Module):
 
     def define_module(self):
         nz, ngf = self.in_dim, self.gf_dim
-        self.main = nn.Sequential(
-            # nz will be the input to the first convolution
-            nn.ConvTranspose2d(
-                nz, 512, kernel_size=4, 
-                stride=1, padding=0, bias=False),
-            nn.BatchNorm2d(512),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(
-                512, 256, kernel_size=4, 
-                stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(256),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(
-                256, 128, kernel_size=4, 
-                stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(128),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(
-                128, 64, kernel_size=4, 
-                stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(64),
-            nn.ReLU(True),
-            nn.ConvTranspose2d(
-                64, 3, kernel_size=4, 
-                stride=2, padding=1, bias=False),
-            nn.Tanh()
-        )
+        self.fc = nn.Sequential(
+            nn.Linear(nz, ngf * 4 * 4 * 2, bias=False),
+            nn.BatchNorm1d(ngf * 4 * 4 * 2),
+            GLU())
+
+        self.upsample1 = upBlock(ngf, ngf // 2)
+        self.upsample2 = upBlock(ngf // 2, ngf // 4)
+        self.upsample3 = upBlock(ngf // 4, ngf // 8)
+        self.upsample4 = upBlock(ngf // 8, ngf // 16)
 
     def forward(self, z_code, c_code):
         """
@@ -340,7 +322,19 @@ class INIT_STAGE_G(nn.Module):
         :return: batch x ngf/16 x 64 x 64
         """
         c_z_code = torch.cat((c_code, z_code), 1)
-        return self.main(c_z_code)
+        # state size ngf x 4 x 4
+        out_code = self.fc(c_z_code)
+        out_code = out_code.view(-1, self.gf_dim, 4, 4)
+        # state size ngf/3 x 8 x 8
+        out_code = self.upsample1(out_code)
+        # state size ngf/4 x 16 x 16
+        out_code = self.upsample2(out_code)
+        # state size ngf/8 x 32 x 32
+        out_code32 = self.upsample3(out_code)
+        # state size ngf/16 x 64 x 64
+        out_code64 = self.upsample4(out_code32)
+
+        return out_code64
 
 
 class Memory(nn.Module):
@@ -471,7 +465,45 @@ class NEXT_STAGE_G(nn.Module):
         out_code = self.upsample(out_code)
         return out_code, att
 
+class NEXT_STAGE_G1(nn.Module):
+    def __init__(self, ngf, nef, ncf):
+        super(NEXT_STAGE_G, self).__init__()
+        self.gf_dim = ngf
+        self.ef_dim = nef
+        self.cf_dim = ncf
+        self.num_residual = cfg.GAN.R_NUM
+        self.define_module()
 
+    def _make_layer(self, block, channel_num):
+        layers = []
+        for i in range(cfg.GAN.R_NUM):
+            layers.append(block(channel_num))
+        return nn.Sequential(*layers)
+
+    def define_module(self):
+        ngf = self.gf_dim
+        self.att = ATT_NET(ngf, self.ef_dim)
+        self.residual = self._make_layer(ResBlock, ngf * 2)
+        self.upsample = upBlock(ngf * 2, ngf)
+
+    def forward(self, h_code, c_code, word_embs, mask):
+        """
+            h_code1(query):  batch x idf x ih x iw (queryL=ihxiw)
+            word_embs(context): batch x cdf x sourceL (sourceL=seq_len)
+            c_code1: batch x idf x queryL
+            att1: batch x sourceL x queryL
+        """
+        self.att.applyMask(mask)
+        c_code, att = self.att(h_code, word_embs)
+        h_c_code = torch.cat((h_code, c_code), 1)
+        out_code = self.residual(h_c_code)
+
+        # state size ngf/2 x 2in_size x 2in_size
+        out_code = self.upsample(out_code)
+
+        return out_code, att
+    
+    
 class GET_IMAGE_G(nn.Module):
     def __init__(self, ngf):
         super(GET_IMAGE_G, self).__init__()
@@ -502,7 +534,7 @@ class G_NET(nn.Module):
             self.h_net2 = NEXT_STAGE_G(ngf, nef, ncf, 64)
             self.img_net2 = GET_IMAGE_G(ngf)
         if cfg.TREE.BRANCH_NUM > 2:
-            self.h_net3 = NEXT_STAGE_G(ngf, nef, ncf, 128)
+            self.h_net3 = NEXT_STAGE_G1(ngf, nef, ncf, 128)
             self.img_net3 = GET_IMAGE_G(ngf)
 
     def forward(self, z_code, sent_emb, word_embs, mask, cap_lens):
