@@ -250,101 +250,101 @@ class condGANTrainer(object):
         gen_iterations = 0
         # gen_iterations = start_epoch * self.num_batches
        # for epoch in range(start_epoch, self.max_epoch):
-            start_t = time.time()
-
-            data_iter = iter(self.data_loader)
-            step = 0
-          #  while step < self.num_batches:
-                # reset requires_grad to be trainable for all Ds
-                # self.set_requires_grad_value(netsD, True)
-
-                ######################################################
-                # (1) Prepare training data and Compute text embeddings
-                ######################################################
-                data = data_iter.next()
-                imgs, captions, cap_lens, class_ids, keys = prepare_data(data)
-
-                hidden = text_encoder.init_hidden(batch_size)
-                # words_embs: batch_size x nef x seq_len
-                # sent_emb: batch_size x nef
-                words_embs, sent_emb = text_encoder(captions, cap_lens, hidden)
-                words_embs, sent_emb = words_embs.detach(), sent_emb.detach()
-                mask = (captions == 0)
-                num_words = words_embs.size(2)
-                if mask.size(1) > num_words:
-                    mask = mask[:, :num_words]
-
-                #######################################################
-                # (2) Generate fake images
-                ######################################################
-                noise.data.normal_(0, 1)
-                fake_imgs, _, mu, logvar = netG(noise, sent_emb, words_embs, mask, cap_lens)
-
-                #######################################################
-                # (3) Update D network
-                ######################################################
-                errD_total = 0
-                D_logs = ''
-                for i in range(len(netsD)):
-                    netsD[i].zero_grad()
-                    errD, log = discriminator_loss(netsD[i], imgs[i], fake_imgs[i],
-                                              sent_emb, real_labels, fake_labels)
-                    # backward and update parameters
-                    #errD.backward()
-                    #optimizersD[i].step()
-                    errD_total += errD
-                    D_logs += 'errD%d: %.2f ' % (i, errD.item())
-                    D_logs += log
-
-                #######################################################
-                # (4) Update G network: maximize log(D(G(z)))
-                ######################################################
-                # compute total loss for training G
-                step += 1
-                gen_iterations += 1
-
-                # do not need to compute gradient for Ds
-                # self.set_requires_grad_value(netsD, False)
-                netG.zero_grad()
-                errG_total, G_logs = \
-                    generator_loss(netsD, image_encoder, fake_imgs, real_labels,
-                                   words_embs, sent_emb, match_labels, cap_lens, class_ids)
-                kl_loss = KL_loss(mu, logvar)
-                errG_total += kl_loss
-                G_logs += 'kl_loss: %.2f ' % kl_loss.item()
-                # backward and update parameters
-                #errG_total.backward()
-                #optimizerG.step()
-                for p, avg_p in zip(netG.parameters(), avg_param_G):
-                    avg_p.mul_(0.999).add_(0.001, p.data)
-
-                #if gen_iterations % 100 == 0:
-                    print('Epoch [{}]'.format(epoch) + ' ' + D_logs + ' ' + G_logs)
-                # save images
-                if gen_iterations % 10000 == 0:
-                    backup_para = copy_G_params(netG)
-                    load_params(netG, avg_param_G)
-                    #self.save_img_results(netG, fixed_noise, sent_emb, words_embs, mask, image_encoder,
-                    #                      captions, cap_lens, epoch, imgs[-1], name='average')
-                    load_params(netG, backup_para)
-                    #
-                    # self.save_img_results(netG, fixed_noise, sent_emb,
-                    #                       words_embs, mask, image_encoder,
-                    #                       captions, cap_lens,
-                    #                       epoch, name='current')
-                # if gen_iterations % 1000 == 0:
-                #    time.sleep(30)
-                # if gen_iterations % 10000 == 0:
-                #    time.sleep(160)
-            end_t = time.time()
-
-            print('''[%d/%d] Loss_D: %.2f Loss_G: %.2f Time: %.2fs''' % (
-                epoch, self.max_epoch, errD_total.item(), errG_total.item(), end_t - start_t))
-            file1 = open("losses.txt","a")
-            file1.write(epoch + ' ' + D_logs + ' ' + G_logs + ' ' + errD_total.item(), errG_total.item())
-            file1.close()
-            print('-' * 89)
-            
+        start_t = time.time()
+    
+        data_iter = iter(self.data_loader)
+        step = 0
+      #  while step < self.num_batches:
+        # reset requires_grad to be trainable for all Ds
+        # self.set_requires_grad_value(netsD, True)
+        
+        ######################################################
+        # (1) Prepare training data and Compute text embeddings
+        ######################################################
+        data = data_iter.next()
+        imgs, captions, cap_lens, class_ids, keys = prepare_data(data)
+        
+        hidden = text_encoder.init_hidden(batch_size)
+        # words_embs: batch_size x nef x seq_len
+        # sent_emb: batch_size x nef
+        words_embs, sent_emb = text_encoder(captions, cap_lens, hidden)
+        words_embs, sent_emb = words_embs.detach(), sent_emb.detach()
+        mask = (captions == 0)
+        num_words = words_embs.size(2)
+        if mask.size(1) > num_words:
+            mask = mask[:, :num_words]
+        
+        #######################################################
+        # (2) Generate fake images
+        ######################################################
+        noise.data.normal_(0, 1)
+        fake_imgs, _, mu, logvar = netG(noise, sent_emb, words_embs, mask, cap_lens)
+        
+        #######################################################
+        # (3) Update D network
+        ######################################################
+        errD_total = 0
+        D_logs = ''
+        for i in range(len(netsD)):
+            netsD[i].zero_grad()
+            errD, log = discriminator_loss(netsD[i], imgs[i], fake_imgs[i],
+                                      sent_emb, real_labels, fake_labels)
+            # backward and update parameters
+            #errD.backward()
+            #optimizersD[i].step()
+            errD_total += errD
+            D_logs += 'errD%d: %.2f ' % (i, errD.item())
+            D_logs += log
+        
+        #######################################################
+        # (4) Update G network: maximize log(D(G(z)))
+        ######################################################
+        # compute total loss for training G
+        step += 1
+        gen_iterations += 1
+        
+        # do not need to compute gradient for Ds
+        # self.set_requires_grad_value(netsD, False)
+        netG.zero_grad()
+        errG_total, G_logs = \
+            generator_loss(netsD, image_encoder, fake_imgs, real_labels,
+                           words_embs, sent_emb, match_labels, cap_lens, class_ids)
+        kl_loss = KL_loss(mu, logvar)
+        errG_total += kl_loss
+        G_logs += 'kl_loss: %.2f ' % kl_loss.item()
+        # backward and update parameters
+        #errG_total.backward()
+        #optimizerG.step()
+        for p, avg_p in zip(netG.parameters(), avg_param_G):
+            avg_p.mul_(0.999).add_(0.001, p.data)
+        
+        #if gen_iterations % 100 == 0:
+            print('Epoch [{}]'.format(epoch) + ' ' + D_logs + ' ' + G_logs)
+        # save images
+        if gen_iterations % 10000 == 0:
+            backup_para = copy_G_params(netG)
+            load_params(netG, avg_param_G)
+            #self.save_img_results(netG, fixed_noise, sent_emb, words_embs, mask, image_encoder,
+            #                      captions, cap_lens, epoch, imgs[-1], name='average')
+            load_params(netG, backup_para)
+            #
+            # self.save_img_results(netG, fixed_noise, sent_emb,
+            #                       words_embs, mask, image_encoder,
+            #                       captions, cap_lens,
+            #                       epoch, name='current')
+        # if gen_iterations % 1000 == 0:
+        #    time.sleep(30)
+        # if gen_iterations % 10000 == 0:
+        #    time.sleep(160)
+        end_t = time.time()
+        
+        print('''[%d/%d] Loss_D: %.2f Loss_G: %.2f Time: %.2fs''' % (
+            epoch, self.max_epoch, errD_total.item(), errG_total.item(), end_t - start_t))
+        file1 = open("losses.txt","a")
+        file1.write(epoch + ' ' + D_logs + ' ' + G_logs + ' ' + errD_total.item(), errG_total.item())
+        file1.close()
+        print('-' * 89)
+        
 
         #self.save_model(netG, avg_param_G, netsD, self.max_epoch)
 
