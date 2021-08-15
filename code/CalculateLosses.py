@@ -238,7 +238,7 @@ class condGANTrainer(object):
     def train(self):
         for modelnum in range(5):
             print('The number of the loop is',modelnum)
-            text_encoder, image_encoder, netG, netsD, start_epoch = self.build_models(modelnum)
+            text_encoder, image_encoder, netG, netsD, start_epoch = self.build_models(modelnum+1)
             avg_param_G = copy_G_params(netG)
             optimizerG, optimizersD = self.define_optimizers(netG, netsD)
             real_labels, fake_labels, match_labels = self.prepare_labels()
@@ -345,7 +345,7 @@ class condGANTrainer(object):
             print('''[%d/%d] Loss_D: %.2f Loss_G: %.2f Time: %.2fs''' % (
                 epoch, self.max_epoch, errD_total.item(), errG_total.item(), end_t - start_t))
             file1 = open("losses.txt","a")
-            file1.write(str(epoch) + ' ' + str(D_logs) + ' ' + str(G_logs) + ' ' + str(errD_total.item())+ ' '+ str(errG_total.item()))
+            file1.write(str(epoch) + ' ' + str(D_logs) + ' ' + str(G_logs) + ' ' + "{:.3f}".format(round(errD_total.item(), 2))+ ' '+ "{:.3f}".format(round(errG_total.item(), 2)))
             file1.close()
             print('-' * 89)
         
