@@ -128,7 +128,7 @@ class condGANTrainer(object):
             istart = cfg.TRAIN.NET_G.rfind('_') + 1
             iend = cfg.TRAIN.NET_G.rfind('.')
             epoch = cfg.TRAIN.NET_G[istart:iend]
-            epoch = int(epoch) + 1
+            epoch = int(epoch) 
             if cfg.TRAIN.B_NET_D:
                 Gname = cfg.TRAIN.NET_G
                 for i in range(len(netsD)):
@@ -250,6 +250,7 @@ class condGANTrainer(object):
         gen_iterations = 0
         # gen_iterations = start_epoch * self.num_batches
        # for epoch in range(start_epoch, self.max_epoch):
+        epoch = start_epoch
         start_t = time.time()
     
         data_iter = iter(self.data_loader)
@@ -341,7 +342,7 @@ class condGANTrainer(object):
         print('''[%d/%d] Loss_D: %.2f Loss_G: %.2f Time: %.2fs''' % (
             epoch, self.max_epoch, errD_total.item(), errG_total.item(), end_t - start_t))
         file1 = open("losses.txt","a")
-        file1.write(epoch + ' ' + D_logs + ' ' + G_logs + ' ' + errD_total.item(), errG_total.item())
+        file1.write(str(epoch) + ' ' + str(D_logs) + ' ' + str(G_logs) + ' ' + str(errD_total.item())+ ' '+ str(errG_total.item()))
         file1.close()
         print('-' * 89)
         
