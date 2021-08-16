@@ -133,7 +133,7 @@ class condGANTrainer(object):
                 Gname = cfg.TRAIN.NET_G
                 for i in range(len(netsD)):
                     s_tmp = Gname[:Gname.rfind('/')]
-                    Dname = '%s/netD%d_%d.pth' % (s_tmp, i,epoch)
+                    Dname = '%s/netD%d_%d.pth' % (s_tmp, i,epoch-1)
                     print('Load D from: ', Dname)
                     state_dict = \
                         torch.load(Dname, map_location=lambda storage, loc: storage)
