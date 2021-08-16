@@ -121,7 +121,7 @@ class condGANTrainer(object):
         #
         epoch = 0
         if cfg.TRAIN.NET_G != '':
-            pathh = cfg.TRAIN.Model + '/' + 'netG_epoch_' + str(modelnum*10) + '.pth'
+            pathh = cfg.TRAIN.NET_G + '/' + 'netG_epoch_' + str(modelnum*10) + '.pth'
             state_dict = \
                 torch.load(pathh, map_location=lambda storage, loc: storage)
             netG.load_state_dict(state_dict)
@@ -236,7 +236,7 @@ class condGANTrainer(object):
 
 
     def train(self):
-        modelnum = 1
+        modelnum = 11
         print('The number of the loop is',modelnum)
         text_encoder, image_encoder, netG, netsD, start_epoch = self.build_models(modelnum)
         avg_param_G = copy_G_params(netG)
