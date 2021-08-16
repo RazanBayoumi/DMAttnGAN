@@ -344,7 +344,7 @@ class condGANTrainer(object):
         
         print('''[%d/%d] Loss_D: %.2f Loss_G: %.2f Time: %.2fs''' % (
             epoch, self.max_epoch, errD_total.item(), errG_total.item(), end_t - start_t))
-        file1 = open("losses.txt","a")
+        file1 = open("/content/drive/MyDrive/Trained_Models/InitialGenerator_Updated/losses.txt","a")
         file1.write(str(epoch) + ' ' + str(D_logs) + ' ' + str(G_logs) + ' ' + "{:.2f}".format(round(errD_total.item(), 2))+ ' '+ "{:.2f}".format(round(errG_total.item(), 2)))
         file1.close()
         print('-' * 89)
