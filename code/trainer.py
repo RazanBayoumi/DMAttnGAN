@@ -341,9 +341,7 @@ class condGANTrainer(object):
 
             print('''[%d/%d] Loss_D: %.2f Loss_G: %.2f Time: %.2fs''' % (
                 epoch, self.max_epoch, errD_total.item(), errG_total.item(), end_t - start_t))
-            file1 = open("losses.txt","a")
-            file1.write(str(epoch) + ' ' + str(D_logs) + ' ' + str(G_logs) + ' ' + "{:.2f}".format(round(errD_total.item(), 2))+ ' '+ "{:.2f}".format(round(errG_total.item(), 2)),'\n')
-            file1.close()
+            
             print('-' * 89)
             if epoch % cfg.TRAIN.SNAPSHOT_INTERVAL == 0:  # and epoch != 0:
                 self.save_model(netG, avg_param_G, netsD, epoch)
