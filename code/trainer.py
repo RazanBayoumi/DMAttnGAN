@@ -422,7 +422,7 @@ class condGANTrainer(object):
             R_count = 0
             R = np.zeros(30000)
             cont = True
-            for ii in range(11):  # (cfg.TEXT.CAPTIONS_PER_IMAGE):
+            for ii in range(cfg.TEXT.CAPTIONS_PER_IMAGE):  # (cfg.TEXT.CAPTIONS_PER_IMAGE):
                 if (cont == False):
                     break
                 for step, data in enumerate(self.data_loader, 0):
