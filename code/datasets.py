@@ -106,7 +106,7 @@ class TextDataset(data.Dataset):
 
         self.data = []
         self.data_dir = data_dir
-        if data_dir.find('faces') != -1:
+        if data_dir.find('birds') != -1:
             self.bbox = self.load_bbox()
         else:
             self.bbox = None
@@ -120,12 +120,12 @@ class TextDataset(data.Dataset):
 
     def load_bbox(self):
         data_dir = self.data_dir
-        bbox_path = os.path.join(data_dir, 'CelebA_500_2020/bounding_boxes.txt')
+        bbox_path = os.path.join(data_dir, 'CUB_200_2011/bounding_boxes.txt')
         df_bounding_boxes = pd.read_csv(bbox_path,
                                         delim_whitespace=True,
                                         header=None).astype(int)
         #
-        filepath = os.path.join(data_dir, 'CelebA_500_2020/images.txt')
+        filepath = os.path.join(data_dir, 'CUB_200_2011/images.txt')
         df_filenames = \
             pd.read_csv(filepath, delim_whitespace=True, header=None)
         filenames = df_filenames[1].tolist()
@@ -145,8 +145,7 @@ class TextDataset(data.Dataset):
     def load_captions(self, data_dir, filenames):
         all_captions = []
         for i in range(len(filenames)):
-            name = filenames[i].rsplit('\r')[0]
-            cap_path = '%s/text/%s.txt' % (data_dir, name)
+            cap_path = '%s/text/%s.txt' % (data_dir, filenames[i])
             with open(cap_path, "r") as f:
                 captions = f.read().decode('utf8').split('\n')
                 cnt = 0
@@ -289,12 +288,12 @@ class TextDataset(data.Dataset):
 
     def __getitem__(self, index):
         #
-        key = self.filenames[index].rsplit('\r')[0]
+        key = self.filenames[index]
         cls_id = self.class_id[index]
         #
         if self.bbox is not None:
             bbox = self.bbox[key]
-            data_dir = '%s/CelebA_500_2020' % self.data_dir
+            data_dir = '%s/CUB_200_2011' % self.data_dir
         else:
             bbox = None
             data_dir = self.data_dir
