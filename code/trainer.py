@@ -345,7 +345,7 @@ class condGANTrainer(object):
             print('-' * 89)
             if epoch % cfg.TRAIN.SNAPSHOT_INTERVAL == 0:  # and epoch != 0:
                 self.save_model(netG, avg_param_G, netsD, epoch)
-                file1 = open("/content/drive/MyDrive/Trained_Models/InitialGenerator_Updated/losses.txt","a")
+                file1 = open("/content/drive/MyDrive/Trained_Models/SecondModel_Birds/losses.txt","a")
                 file1.write(str(epoch) + ' ' + str(D_logs) + ' ' + str(G_logs) + ' ' + "{:.2f}".format(round(errD_total.item(), 2))+ ' '+ "{:.2f}".format(round(errG_total.item(), 2))+'\n')
                 file1.close()
 
