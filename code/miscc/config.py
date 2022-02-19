@@ -9,8 +9,8 @@ from easydict import EasyDict as edict
 __C = edict()
 cfg = __C
 
-# Dataset name: flowers, birds
-__C.DATASET_NAME = 'birds'
+# Dataset name: faces
+__C.DATASET_NAME = 'faces'
 __C.CONFIG_NAME = ''
 __C.DATA_DIR = ''
 __C.GPU_ID = 0
@@ -68,11 +68,12 @@ def _merge_a_into_b(a, b):
     options in b whenever they are also specified in a.
     """
     if type(a) is not edict:
+        print('IS HERE')
         return
 
-    for k, v in a.iteritems():
+    for k, v in a.items():
         # a must specify keys that are in b
-        if not b.has_key(k):
+        if k not in b:
             raise KeyError('{} is not a valid config key'.format(k))
 
         # the types must match, too
