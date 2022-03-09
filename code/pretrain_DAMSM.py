@@ -157,8 +157,8 @@ def evaluate(dataloader, cnn_model, rnn_model, batch_size):
         if step == 50:
             break
 
-    s_cur_loss = s_total_loss[0] / step
-    w_cur_loss = w_total_loss[0] / step
+    s_cur_loss = s_total_loss / step
+    w_cur_loss = w_total_loss / step
 
     return s_cur_loss, w_cur_loss
 
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     ##########################################################################
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-    output_dir = '../output/%s_%s_%s' % \
+    output_dir = '/content/drive/MyDrive/DAMSMEncoders/%s_%s_%s' % \
         (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)
 
     model_dir = os.path.join(output_dir, 'Model')
