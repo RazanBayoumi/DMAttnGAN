@@ -5,6 +5,7 @@ from torch.autograd import Variable
 from torchvision import models
 import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
+import ssl
 
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
@@ -164,6 +165,7 @@ class CNN_ENCODER(nn.Module):
         else:
             self.nef = 256  # define a uniform ranker
 
+        ssl._create_default_https_context = ssl._create_unverified_context
         model = models.inception_v3()
         url = 'https://download.pytorch.org/models/inception_v3_google-1a9a5a14.pth'
         model.load_state_dict(model_zoo.load_url(url))
