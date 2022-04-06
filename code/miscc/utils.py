@@ -239,7 +239,8 @@ def build_super_images2(real_imgs, captions, cap_lens, ixtoword,
             one_map *= 255
             #
             PIL_im = Image.fromarray(np.uint8(img))
-            PIL_att = Image.fromarray(np.uint8(one_map))
+            #PIL_att = Image.fromarray(np.uint8(one_map))
+            PIL_att = Image.fromarray(np.uint8(one_map)[:,:,0:3])
             merged = \
                 Image.new('RGBA', (vis_size, vis_size), (0, 0, 0, 0))
             mask = Image.new('L', (vis_size, vis_size), (180))  # (210)
@@ -247,7 +248,8 @@ def build_super_images2(real_imgs, captions, cap_lens, ixtoword,
             merged.paste(PIL_att, (0, 0), mask)
             merged = np.array(merged)[:, :, :3]
 
-            row.append(np.concatenate([one_map, middle_pad], 1))
+            #row.append(np.concatenate([one_map, middle_pad], 1))
+            row.append(np.concatenate([one_map[:,:,0:3], middle_pad], 1))
             #
             row_merge.append(np.concatenate([merged, middle_pad], 1))
             #
